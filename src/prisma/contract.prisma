@@ -1,0 +1,30 @@
+// use prisma-8
+
+model Worker {
+  id           Int      @id @default(autoincrement())
+  nationalId   String   @unique
+  phone        String   @unique
+  passwordHash String
+  firstName    String
+  lastName     String
+  role         String   @default("WORKER")
+  isActive     Boolean  @default(true)
+  createdAt    TimestamptzString @default(now())
+
+  timeLogs     TimeLog[]
+}
+
+model TimeLog {
+  id        Int      @id @default(autoincrement())
+  workerId  Int
+  worker    Worker   @relation(fields: [workerId], references: [id], onDelete: Cascade)
+
+  entryTime TimestamptzString
+  exitTime  TimestamptzString?
+  workDate  DateString
+
+  createdAt TimestamptzString @default(now())
+
+  @@index([workerId, workDate])
+  @@index([workDate])
+}

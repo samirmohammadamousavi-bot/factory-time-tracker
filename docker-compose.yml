@@ -1,0 +1,19 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: factory-time-tracker-db
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_USER: factory_admin
+      POSTGRES_PASSWORD: factory_password
+      POSTGRES_DB: factory_tracker
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - factory_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  factory_postgres_data:
