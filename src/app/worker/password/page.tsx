@@ -35,39 +35,45 @@ export default function ChangePasswordPage() {
     }
   };
 
+  const inputCls =
+    'w-full bg-white/70 border border-cream-darker text-plum placeholder:text-plum/30 rounded-xl p-3.5 outline-none transition-all focus:ring-2 focus:ring-teal focus:border-teal focus:bg-white';
+
   return (
-    <div dir="rtl" className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+    <div dir="rtl" className="flex items-center justify-center p-4 pt-8 pb-12">
       <form
         onSubmit={handleSubmit}
-        className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md space-y-4"
+        className="luxury-card p-8 rounded-3xl w-full max-w-md space-y-5"
       >
-        <h1 className="text-xl font-bold text-center text-gray-800">تغییر رمز عبور</h1>
-        {message && <p className="text-green-600 text-sm text-center">{message}</p>}
-        {error && <p className="text-red-500 text-sm text-center">{error}</p>}
-        <input
-          type="password"
-          placeholder="رمز فعلی"
-          value={currentPassword}
+        <div className="text-center">
+          <div className="w-14 h-14 mx-auto rounded-2xl bg-linear-to-br from-teal to-teal-dark flex items-center justify-center shadow-lg shadow-teal/30 mb-3">
+            <span className="text-xl">🔒</span>
+          </div>
+          <h1 className="text-xl font-bold text-plum tracking-tight">تغییر رمز عبور</h1>
+          <p className="text-xs text-plum/40 mt-1">رمز جدید باید حداقل ۴ کاراکتر باشد</p>
+        </div>
+
+        <div className="h-px bg-linear-to-r from-transparent via-cream-darker to-transparent" />
+
+        {message && (
+          <p className="text-olive text-sm text-center bg-olive/10 border border-olive/25 rounded-xl py-2 font-medium">
+            {message}
+          </p>
+        )}
+        {error && (
+          <p className="text-red-500 text-sm text-center bg-red-500/10 border border-red-500/25 rounded-xl py-2 font-medium">
+            {error}
+          </p>
+        )}
+
+        <input type="password" placeholder="رمز فعلی" value={currentPassword}
           onChange={(e) => setCurrentPassword(e.target.value)}
-          className="w-full border border-gray-300 rounded-lg p-3 outline-none focus:ring-2 focus:ring-blue-500"
-          required
-          disabled={loading}
-        />
-        <input
-          type="password"
-          placeholder="رمز جدید (حداقل ۴ کاراکتر)"
-          value={newPassword}
+          className={inputCls} required disabled={loading} />
+        <input type="password" placeholder="رمز جدید (حداقل ۴ کاراکتر)" value={newPassword}
           onChange={(e) => setNewPassword(e.target.value)}
-          className="w-full border border-gray-300 rounded-lg p-3 outline-none focus:ring-2 focus:ring-blue-500"
-          required
-          minLength={4}
-          disabled={loading}
-        />
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
-        >
+          className={inputCls} required minLength={4} disabled={loading} />
+
+        <button type="submit" disabled={loading}
+          className="w-full bg-linear-to-br from-teal to-teal-dark text-white py-3.5 rounded-xl font-semibold shadow-lg shadow-teal/30 hover:shadow-xl hover:shadow-teal/40 hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:hover:translate-y-0">
           {loading ? 'در حال ثبت...' : 'تغییر رمز'}
         </button>
       </form>

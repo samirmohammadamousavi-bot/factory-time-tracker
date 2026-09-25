@@ -1,30 +1,109 @@
 @import "tailwindcss";
 
-:root {
-  --background: #2d1a1f;
-  --foreground: #f5ede6;
+/* ---------- Theme palettes (a..k) ---------- */
+:root,
+[data-theme="a"] {
+  --theme-dark:   #1c1714;
+  --theme-muted:  #8b7765;
+  --theme-soft:   #d8c8b4;
+  --theme-light:  #f5efe6;
+  --theme-accent: #b99a5b;
+}
+[data-theme="b"] {
+  --theme-dark:   #242424;
+  --theme-muted:  #8d8a84;
+  --theme-soft:   #c3a78e;
+  --theme-light:  #f3f0ea;
+  --theme-accent: #7a4f3a;
+}
+[data-theme="c"] {
+  --theme-dark:   #2f3a2e;
+  --theme-muted:  #8e9a86;
+  --theme-soft:   #bbc7a4;
+  --theme-light:  #ece7dd;
+  --theme-accent: #5d4538;
+}
+[data-theme="d"] {
+  --theme-dark:   #18202f;
+  --theme-muted:  #68748a;
+  --theme-soft:   #dce1e6;
+  --theme-light:  #faf7f2;
+  --theme-accent: #b8734f;
+}
+[data-theme="e"] {
+  --theme-dark:   #2d211b;
+  --theme-muted:  #7b5a48;
+  --theme-soft:   #e7d7c2;
+  --theme-light:  #f8f1e8;
+  --theme-accent: #b9784d;
+}
+[data-theme="f"] {
+  --theme-dark:   #211f1d;
+  --theme-muted:  #a39a90;
+  --theme-soft:   #e8dfd3;
+  --theme-light:  #f7f4ef;
+  --theme-accent: #b68a82;
+}
+[data-theme="g"] {
+  --theme-dark:   #101317;
+  --theme-muted:  #343a40;
+  --theme-soft:   #aab2bd;
+  --theme-light:  #f4f7fa;
+  --theme-accent: #3b82f6;
+}
+[data-theme="h"] {
+  --theme-dark:   #3a2a22;
+  --theme-muted:  #b86f52;
+  --theme-soft:   #d9bfa3;
+  --theme-light:  #f3e7d8;
+  --theme-accent: #8c8a68;
+}
+[data-theme="i"] {
+  --theme-dark:   #0e0e0e;
+  --theme-muted:  #2b2b2b;
+  --theme-soft:   #9a948b;
+  --theme-light:  #fff8ea;
+  --theme-accent: #d8c49a;
+}
+/* ── NEW: Girls (rose/pink) ── */
+[data-theme="j"] {
+  --theme-dark:   #2d1b2e;
+  --theme-muted:  #c48fa8;
+  --theme-soft:   #f5c6d6;
+  --theme-light:  #fff5f7;
+  --theme-accent: #e88fab;
+}
+/* ── NEW: Bright (electric) ── */
+[data-theme="k"] {
+  --theme-dark:   #1e293b;
+  --theme-muted:  #ec4899;
+  --theme-soft:   #06b6d4;
+  --theme-light:  #ffffff;
+  --theme-accent: #f59e0b;
 }
 
+/* ---------- Tailwind tokens (semantic → theme) ---------- */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-background: var(--theme-dark);
+  --color-foreground: var(--theme-light);
 
-  --color-plum: #2d1a1f;
-  --color-plum-light: #3d2529;
-  --color-plum-lighter: #4a2f34;
-  --color-plum-dark: #1f0f13;
+  --color-plum:         var(--theme-dark);
+  --color-plum-light:   var(--theme-muted);
+  --color-plum-lighter: var(--theme-soft);
+  --color-plum-dark:    var(--theme-dark);
 
-  --color-cream: #f5ede6;
-  --color-cream-dark: #e8dcd0;
-  --color-cream-darker: #d9c8b8;
+  --color-cream:        var(--theme-light);
+  --color-cream-dark:   var(--theme-soft);
+  --color-cream-darker: var(--theme-muted);
 
-  --color-olive: #5ca124;
-  --color-olive-dark: #4a8220;
+  --color-teal:         var(--theme-accent);
+  --color-teal-dark:    var(--theme-accent);
+  --color-teal-light:   var(--theme-accent);
+
+  /* Semantic colors stay fixed */
+  --color-olive:       #5ca124;
+  --color-olive-dark:  #4a8220;
   --color-olive-light: #6fbc30;
-
-  --color-teal: #29a9a0;
-  --color-teal-dark: #1f8a83;
-  --color-teal-light: #34c4ba;
 
   --animate-bounce-slow: bounce-slow 1s infinite;
 
@@ -34,53 +113,41 @@
   }
 }
 
-html, body {
-  min-height: 100%;
-}
+/* ---------- Base ---------- */
+html, body { min-height: 100%; }
 
 body {
-  background-color: #2d1a1f;
+  background-color: var(--theme-dark);
   background-image:
-    radial-gradient(circle at 12% 0%, rgba(41, 169, 160, 0.10) 0%, transparent 40%),
-    radial-gradient(circle at 88% 100%, rgba(92, 161, 36, 0.08) 0%, transparent 40%),
-    radial-gradient(circle at 50% 50%, rgba(74, 47, 52, 0.5) 0%, transparent 70%);
+    radial-gradient(circle at 12% 0%,   color-mix(in srgb, var(--theme-accent) 10%, transparent) 0%, transparent 40%),
+    radial-gradient(circle at 88% 100%, color-mix(in srgb, var(--theme-accent)  8%, transparent) 0%, transparent 40%),
+    radial-gradient(circle at 50% 50%,  color-mix(in srgb, var(--theme-muted)  50%, transparent) 0%, transparent 70%);
   background-attachment: fixed;
-  color: #f5ede6;
+  color: var(--theme-light);
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  transition: background-color 250ms ease, color 250ms ease;
 }
 
-/* RTL support for inputs */
-input, select, textarea {
-  text-align: right;
-}
+input, select, textarea { text-align: right; }
 
-/* Scrollbar styling */
 ::-webkit-scrollbar { width: 10px; height: 10px; }
-::-webkit-scrollbar-track { background: #2d1a1f; }
-::-webkit-scrollbar-thumb { background: #4a2f34; border-radius: 5px; }
-::-webkit-scrollbar-thumb:hover { background: #5ca124; }
+::-webkit-scrollbar-track { background: var(--theme-dark); }
+::-webkit-scrollbar-thumb { background: var(--theme-muted); border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: var(--theme-accent); }
 
-/* Reusable luxury surface */
 .luxury-card {
-  background: #f5ede6;
-  border: 1px solid rgba(217, 200, 184, 0.6);
+  background: var(--theme-light);
+  border: 1px solid color-mix(in srgb, var(--theme-muted) 60%, transparent);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.7),
     0 20px 45px -25px rgba(0, 0, 0, 0.55),
     0 4px 12px -4px rgba(0, 0, 0, 0.3);
+  color: var(--theme-dark);
 }
 
 .luxury-card-dark {
-  background: rgba(45, 26, 31, 0.6);
-  border: 1px solid rgba(245, 237, 230, 0.08);
+  background: color-mix(in srgb, var(--theme-dark) 60%, transparent);
+  border: 1px solid color-mix(in srgb, var(--theme-light) 8%, transparent);
   backdrop-filter: blur(12px);
   box-shadow: 0 20px 45px -25px rgba(0, 0, 0, 0.6);
-}
-
-/* Gradient text for headings */
-.luxury-heading {
-  background: linear-gradient(135deg, #f5ede6 0%, #d9c8b8 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
 }

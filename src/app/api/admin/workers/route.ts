@@ -5,6 +5,15 @@ import { auth } from '@/lib/auth';
 
 export const runtime = 'nodejs';
 
+const DEPARTMENTS = [
+  'PRODUCTION',
+  'PACKAGING',
+  'MAINTENANCE',
+  'QUALITY',
+  'WAREHOUSE',
+  'ADMIN',
+] as const;
+
 export async function GET() {
   const session = await auth();
   if (session?.user?.role !== 'ADMIN') {
@@ -24,13 +33,19 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
-  const { nationalId, phone, firstName, lastName } = await req.json();
+  const body = await req.json();
+  const { nationalId, phone, firstName, lastName, role, gender, department } = body;
 
   if (!nationalId || !phone || !firstName || !lastName) {
     return NextResponse.json({ error: 'All fields are required' }, { status: 400 });
   }
 
-  // Initial password = phone number
+  const safeRole: 'ADMIN' | 'WORKER' = role === 'ADMIN' ? 'ADMIN' : 'WORKER';
+  const safeGender: 'MALE' | 'FEMALE' = gender === 'FEMALE' ? 'FEMALE' : 'MALE';
+  const safeDepartment = (DEPARTMENTS as readonly string[]).includes(department)
+    ? department
+    : 'PRODUCTION';
+
   const passwordHash = await bcrypt.hash(phone, 10);
 
   try {
@@ -40,8 +55,11 @@ export async function POST(req: NextRequest) {
       passwordHash,
       firstName,
       lastName,
-      role: 'WORKER',
+      role: safeRole,
       isActive: true,
+      gender: safeGender,
+      department: safeDepartment,
+      theme: 'a',
     });
 
     return NextResponse.json({ id: worker.id }, { status: 201 });

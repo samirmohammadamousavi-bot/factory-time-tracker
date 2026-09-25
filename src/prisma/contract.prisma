@@ -10,6 +10,9 @@ model Worker {
   role         String   @default("WORKER")
   isActive     Boolean  @default(true)
   createdAt    TimestamptzString @default(now())
+  gender       String    @default("MALE")     // "MALE" | "FEMALE"
+  department   String    @default("PRODUCTION") // PRODUCTION | PACKAGING | MAINTENANCE | QUALITY | WAREHOUSE | ADMIN
+  theme        String    @default("a")        // "a".."i"
 
   timeLogs     TimeLog[]
 }

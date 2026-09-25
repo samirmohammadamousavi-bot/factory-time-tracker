@@ -114,7 +114,21 @@
                   "kind": "scalar"
                 }
               },
+              "department": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "firstName": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "gender": {
                 "nullable": false,
                 "type": {
                   "codecId": "pg/text@1",
@@ -169,6 +183,13 @@
                   "codecId": "pg/text@1",
                   "kind": "scalar"
                 }
+              },
+              "theme": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
               }
             },
             "relations": {
@@ -193,8 +214,14 @@
                 "createdAt": {
                   "column": "createdAt"
                 },
+                "department": {
+                  "column": "department"
+                },
                 "firstName": {
                   "column": "firstName"
+                },
+                "gender": {
+                  "column": "gender"
                 },
                 "id": {
                   "column": "id"
@@ -216,6 +243,9 @@
                 },
                 "role": {
                   "column": "role"
+                },
+                "theme": {
+                  "column": "theme"
                 }
               },
               "namespaceId": "public",
@@ -336,8 +366,26 @@
                   "nativeType": "timestamptz",
                   "nullable": false
                 },
+                "department": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "PRODUCTION"
+                  },
+                  "nativeType": "text",
+                  "nullable": false
+                },
                 "firstName": {
                   "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "gender": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "MALE"
+                  },
                   "nativeType": "text",
                   "nullable": false
                 },
@@ -387,6 +435,15 @@
                   },
                   "nativeType": "text",
                   "nullable": false
+                },
+                "theme": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "a"
+                  },
+                  "nativeType": "text",
+                  "nullable": false
                 }
               },
               "foreignKeys": [],
@@ -415,7 +472,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "6d1e4cbdf7a19e099347fd671968886c663fc576d467f476e4c4e2c73d0251a2"
+    "storageHash": "9d3ac6bd8b8efc7b94fcf074d8d1c8161168ad2db78fddf46b832860f60e96ce"
   },
   "capabilities": {
     "postgres": {
