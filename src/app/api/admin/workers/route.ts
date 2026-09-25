@@ -45,8 +45,10 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ id: worker.id }, { status: 201 });
-  } catch (error: any) {
-    if (error.code === 'ORM.CONSTRAINT_VIOLATION' || error.message?.includes('unique')) {
+  } catch (error) {
+    const code = (error as { code?: string }).code;
+    const message = error instanceof Error ? error.message : '';
+    if (code === 'ORM.CONSTRAINT_VIOLATION' || message.includes('unique')) {
       return NextResponse.json({ error: 'National ID or phone already exists' }, { status: 400 });
     }
     throw error;

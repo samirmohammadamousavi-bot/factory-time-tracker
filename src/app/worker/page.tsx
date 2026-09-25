@@ -46,14 +46,22 @@ export default function WorkerDashboard() {
   const load = async () => {
     try {
       const res = await fetch('/api/worker/summary');
-      const data = await res.json();
-      setSummary(data);
+      setSummary(await res.json());
     } catch (error) {
       console.error('Failed to load summary:', error);
     }
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch('/api/worker/summary');
+        setSummary(await res.json());
+      } catch (error) {
+        console.error('Failed to load summary:', error);
+      }
+    })();
+  }, []);
 
   const clock = async (action: 'clock-in' | 'clock-out') => {
     setActionLoading(true);

@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { signOut } from 'next-auth/react';
 import { usePathname } from 'next/navigation';
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default function WorkerLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   const link = (href: string, label: string) => {
@@ -31,10 +31,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#29a9a0] to-[#1f8a83] flex items-center justify-center shadow-md shadow-[#29a9a0]/30">
               <span className="text-sm">⏱</span>
             </div>
-            <span className="font-bold text-[#f5ede6] tracking-tight">پنل مدیریت</span>
+            <span className="font-bold text-[#f5ede6] tracking-tight">پنل کارگر</span>
           </div>
-          {link('/admin', 'داشبورد')}
-          {link('/admin/workers', 'کارگران')}
+          {link('/worker', 'ثبت ورود و خروج')}
+          {link('/worker/password', 'تغییر رمز')}
           <button
             onClick={() => signOut({ callbackUrl: '/login' })}
             className="mr-auto px-4 py-2 rounded-xl text-sm font-medium text-[#f5ede6]/60 hover:text-[#e0776a] hover:bg-[#e0776a]/10 transition-all"

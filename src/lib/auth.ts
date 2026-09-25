@@ -3,6 +3,12 @@ import Credentials from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
 import { db } from './prisma';
 
+interface AppToken {
+  role?: string;
+  workerId?: string;
+  nationalId?: string;
+}
+
 declare module 'next-auth' {
   interface User {
     role: string;
@@ -55,17 +61,19 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        (token as any).role = user.role;
-        (token as any).workerId = user.id;
-        (token as any).nationalId = user.nationalId;
+        const t = token as AppToken;
+        t.role = user.role;
+        t.workerId = user.id;
+        t.nationalId = user.nationalId;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = (token as any).workerId;
-        session.user.role = (token as any).role;
-        session.user.nationalId = (token as any).nationalId;
+        const t = token as AppToken;
+        session.user.id = t.workerId ?? '';
+        session.user.role = t.role ?? '';
+        session.user.nationalId = t.nationalId ?? '';
       }
       return session;
     },
