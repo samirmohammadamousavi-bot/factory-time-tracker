@@ -57,14 +57,17 @@ export default function WorkersPage() {
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
   const load = async () => {
+    setLoading(true);
     try {
       const res = await fetch('/api/admin/workers');
+      if (!res.ok) return;
       setWorkers(await res.json());
     } catch (error) {
       console.error('Failed to load workers:', error);
+    } finally {
+      setLoading(false);
     }
   };
-
   useEffect(() => {
     let cancelled = false;
     (async () => {

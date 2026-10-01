@@ -120,7 +120,6 @@ function TimePicker12({
         <label className="block text-xs font-bold text-plum/60 mb-2">{label}</label>
       )}
       <div className="flex items-center gap-2">
-        {/* Hour */}
         <select
           value={value.hour}
           onChange={(e) => onChange({ ...value, hour: Number(e.target.value) })}
@@ -135,7 +134,6 @@ function TimePicker12({
 
         <span className="text-plum/40 font-bold text-lg">:</span>
 
-        {/* Minute */}
         <select
           value={value.minute}
           onChange={(e) => onChange({ ...value, minute: Number(e.target.value) })}
@@ -148,7 +146,6 @@ function TimePicker12({
           ))}
         </select>
 
-        {/* AM / PM dropdown */}
         <select
           value={value.meridiem}
           onChange={(e) =>
@@ -194,7 +191,6 @@ export default function WorkerDashboard() {
 
   useEffect(() => { load(); }, []);
 
-  // Prefill manual form when today's log exists
   useEffect(() => {
     if (summary?.today) {
       if (summary.today.entryTime) setEntryTime12(toTime12(toTehranHHMM(summary.today.entryTime)));
@@ -241,10 +237,6 @@ export default function WorkerDashboard() {
   const today = summary?.today ?? null;
   const todayHours = today?.hours ?? 0;
 
-  // ─── Manual mode state ───
-  // 'none'       → no log today: entry + optional exit
-  // 'entry-only' → entry exists, no exit: only exit
-  // 'complete'   → both exist: allow editing both
   const manualState: 'none' | 'entry-only' | 'complete' =
     !today ? 'none'
     : today.entryTime && !today.exitTime ? 'entry-only'
@@ -258,15 +250,12 @@ export default function WorkerDashboard() {
       let exit24: string | null;
 
       if (manualState === 'entry-only') {
-        // keep existing entry, only record exit
         entry24 = toHHMM(entryTime12);
         exit24 = toHHMM(exitTime12);
       } else if (manualState === 'complete') {
-        // both editable
         entry24 = toHHMM(entryTime12);
         exit24 = toHHMM(exitTime12);
       } else {
-        // none: entry + optional exit
         entry24 = toHHMM(entryTime12);
         exit24 = hasExit ? toHHMM(exitTime12) : null;
       }
@@ -294,7 +283,6 @@ export default function WorkerDashboard() {
   return (
     <div dir="rtl" className="p-4 pb-12">
       <div className="w-full max-w-2xl mx-auto space-y-5 pt-6">
-        {/* Toast */}
         {toast && (
           <div className={`rounded-2xl px-4 py-3 text-sm font-medium text-center border ${
             toast.type === 'ok'
@@ -344,7 +332,6 @@ export default function WorkerDashboard() {
 
         {/* Clock card */}
         <div className="luxury-card rounded-3xl p-6 space-y-5">
-          {/* Mode toggle */}
           <div className="flex gap-1 bg-plum/5 p-1 rounded-2xl border border-plum/10">
             <button
               type="button"
@@ -429,12 +416,11 @@ export default function WorkerDashboard() {
 
           {mode === 'manual' && (
             <form onSubmit={saveManual} className="space-y-5">
-              {/* ── Contextual header ── */}
               {manualState === 'none' && (
                 <div className="rounded-2xl p-4 bg-teal/8 border border-teal/25">
                   <p className="text-sm font-bold text-plum mb-1">امروز هنوز ثبت نشده</p>
                   <p className="text-xs text-plum/70">
-                    زمان ورود و — اگر خروج زده‌ای — زمان خروج را وارد کن. اگر خروج را نمی‌دانی، فقط ورود را ثبت کن.
+                    زمان ورود و — اگر خروج زده‌ای — زمان خروج را وارد کن.
                   </p>
                 </div>
               )}
@@ -442,25 +428,19 @@ export default function WorkerDashboard() {
               {manualState === 'entry-only' && (
                 <div className="rounded-2xl p-4 bg-olive/10 border border-olive/25">
                   <p className="text-sm font-bold text-plum mb-1">ورودت ثبت شده — فقط خروج را وارد کن</p>
-                  <p className="text-xs text-plum/70">
-                    زمان ورود قفل شده. فقط زمان خروج را انتخاب کن و ثبت بزن.
-                  </p>
+                  <p className="text-xs text-plum/70">زمان ورود قفل شده.</p>
                 </div>
               )}
 
               {manualState === 'complete' && (
                 <div className="rounded-2xl p-4 bg-plum/5 border border-cream-darker/60">
                   <p className="text-sm font-bold text-plum mb-1">امروز تکمیل شده</p>
-                  <p className="text-xs text-plum/70">
-                    می‌توانی زمان‌ها را اصلاح کنی. بعد از ذخیره، اطلاعات جدید جایگزین قبلی می‌شود.
-                  </p>
+                  <p className="text-xs text-plum/70">می‌توانی زمان‌ها را اصلاح کنی.</p>
                 </div>
               )}
 
-              {/* ── Fields ── */}
               {manualState === 'entry-only' ? (
                 <>
-                  {/* Entry — read-only card */}
                   <div className="rounded-2xl p-4 bg-white border border-cream-darker flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-xl bg-olive/15 flex items-center justify-center">
@@ -469,9 +449,7 @@ export default function WorkerDashboard() {
                       <div>
                         <p className="text-xs text-plum/50 font-medium">ورود ثبت شده</p>
                         <p className="text-lg font-bold text-plum" dir="ltr">
-                          {today?.entryTime
-                            ? toTehranHHMM(today.entryTime)
-                            : '—'}
+                          {today?.entryTime ? toTehranHHMM(today.entryTime) : '—'}
                         </p>
                       </div>
                     </div>
@@ -480,7 +458,6 @@ export default function WorkerDashboard() {
                     </span>
                   </div>
 
-                  {/* Exit picker */}
                   <TimePicker12
                     label="زمان خروج"
                     value={exitTime12}
@@ -521,7 +498,7 @@ export default function WorkerDashboard() {
                           disabled={manualLoading}
                         />
                       ) : (
-                        <div className="rounded-xl border border-dashed border-cream-darker/70 bg-plum/[0.02] p-6 text-center text-sm text-plum/40">
+                        <div className="rounded-xl border border-dashed border-cream-darker/70 bg-plum/2 p-6 text-center text-sm text-plum/40">
                           خروج را الان نمی‌دانی؟ بعداً می‌توانی اضافه کنی
                         </div>
                       )}
@@ -537,7 +514,6 @@ export default function WorkerDashboard() {
                 </div>
               )}
 
-              {/* ── Buttons ── */}
               <div className="flex gap-3">
                 <button
                   type="submit"
@@ -583,6 +559,9 @@ export default function WorkerDashboard() {
             <p className="text-[10px] text-plum/40 mt-0.5">{summary?.monthDays ?? 0} روز حضور</p>
           </div>
         </div>
+
+        {/* 👇 NEW: Vacation summary card */}
+        <VacationSnippet />
 
         {/* Recent history */}
         <div className="luxury-card rounded-3xl overflow-hidden">
@@ -630,5 +609,47 @@ export default function WorkerDashboard() {
         <p className="text-center text-sm text-cream/30 pt-2">سیستم ثبت ساعت کار کارخانه</p>
       </div>
     </div>
+  );
+}
+
+/* ---------- Vacation summary card ---------- */
+
+function VacationSnippet() {
+  const [remaining, setRemaining] = useState<number | null>(null);
+  const [entitled, setEntitled] = useState(30);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch('/api/worker/vacation');
+        if (!res.ok) return;
+        const data = await res.json();
+        setRemaining(data.stats?.remaining ?? 0);
+        setEntitled(data.stats?.entitled ?? 30);
+      } catch {
+        /* ignore */
+      }
+    })();
+  }, []);
+
+  return (
+    <a
+      href="/worker/vacation"
+      className="luxury-card rounded-2xl p-5 flex items-center justify-between gap-4 hover:-translate-y-0.5 transition-all"
+    >
+      <div className="flex items-center gap-3">
+        <div className="w-12 h-12 rounded-xl bg-teal/15 flex items-center justify-center text-2xl">
+          🏖
+        </div>
+        <div>
+          <p className="text-xs font-semibold text-plum/50">مرخصی باقی‌مانده</p>
+          <p className="text-2xl font-bold text-teal">
+            {remaining === null ? '...' : remaining}
+            <span className="text-xs text-plum/50 font-normal"> از {entitled} روز</span>
+          </p>
+        </div>
+      </div>
+      <span className="text-plum/40 text-xl">‹</span>
+    </a>
   );
 }

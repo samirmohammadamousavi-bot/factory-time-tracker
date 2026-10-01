@@ -1,12 +1,13 @@
+import '@/lib/temporal-setup';
 import { db } from './prisma';
-import { jalaliToGregorianStr, tehranDateString } from './jalali';
+import { jalaliToGregorianStr, tehranDateString, toJalaliParts } from './jalali';
 
 export interface DayRow {
   workerId: number;
   workerName: string;
   date: string;
-  entryTime: string | null;
-  exitTime: string | null;
+  entryTime: Temporal.Instant | null;
+  exitTime: Temporal.Instant | null;
   hours: number;
   status: 'complete' | 'open' | 'absent';
 }
@@ -16,19 +17,18 @@ export interface AbsentWorker {
   workerName: string;
 }
 
-function hoursBetween(entry: string, exit: string): number {
-  return (new Date(exit).getTime() - new Date(entry).getTime()) / 3600000;
+function hoursBetween(entry: Temporal.Instant, exit: Temporal.Instant): number {
+  return (exit.epochMilliseconds - entry.epochMilliseconds) / 3_600_000;
 }
 
-/** Aggregate raw TimeLog rows (with worker included) into one row per worker per day. */
 export function aggregateByDay(
   logs: Array<{
     workerId: number;
     workDate: string;
-    entryTime: string;
-    exitTime: string | null;
+    entryTime: Temporal.Instant;
+    exitTime: Temporal.Instant | null;
     worker: { firstName: string; lastName: string };
-  }>
+  }>,
 ): DayRow[] {
   const map = new Map<string, DayRow>();
   for (const log of logs) {
@@ -48,10 +48,13 @@ export function aggregateByDay(
     if (log.exitTime) {
       row.hours += hoursBetween(log.entryTime, log.exitTime);
     }
-    if (new Date(log.entryTime) < new Date(row.entryTime!)) {
+    if (!row.entryTime || log.entryTime.epochMilliseconds < row.entryTime.epochMilliseconds) {
       row.entryTime = log.entryTime;
     }
-    if (log.exitTime && (!row.exitTime || new Date(log.exitTime) > new Date(row.exitTime))) {
+    if (
+      log.exitTime &&
+      (!row.exitTime || log.exitTime.epochMilliseconds > row.exitTime.epochMilliseconds)
+    ) {
       row.exitTime = log.exitTime;
     }
   }
@@ -69,7 +72,6 @@ async function allWorkers() {
   return db.orm.public.Worker.orderBy((m) => m.id.asc()).all();
 }
 
-/** Rows for a single Gregorian date (YYYY-MM-DD, Tehran day) + absent workers. */
 export async function getDailyReport(dateStr: string): Promise<{
   date: string;
   rows: DayRow[];
@@ -78,7 +80,9 @@ export async function getDailyReport(dateStr: string): Promise<{
 }> {
   const [logs, workers] = await Promise.all([allLogsWithWorker(), allWorkers()]);
   const dayLogs = logs.filter((l) => l.workDate === dateStr);
-  const rows = aggregateByDay(dayLogs).sort((a, b) => a.workerName.localeCompare(b.workerName, 'fa'));
+  const rows = aggregateByDay(dayLogs).sort((a, b) =>
+    a.workerName.localeCompare(b.workerName, 'fa'),
+  );
   const present = new Set(rows.map((r) => r.workerId));
   const absent = workers
     .filter((w) => !present.has(w.id))
@@ -87,28 +91,33 @@ export async function getDailyReport(dateStr: string): Promise<{
   return { date: dateStr, rows, absent, totalHours };
 }
 
-/** Per-worker-per-day rows for a Jalali month (existing stats behavior). */
 export async function getMonthRows(jy: number, jm: number): Promise<DayRow[]> {
   const startStr = jalaliToGregorianStr(jy, jm, 1);
-  const endStr = jm === 12 ? jalaliToGregorianStr(jy + 1, 1, 1) : jalaliToGregorianStr(jy, jm + 1, 1);
+  const endStr =
+    jm === 12
+      ? jalaliToGregorianStr(jy + 1, 1, 1)
+      : jalaliToGregorianStr(jy, jm + 1, 1);
   const logs = await allLogsWithWorker();
-  return aggregateByDay(logs.filter((l) => l.workDate >= startStr && l.workDate < endStr));
+  return aggregateByDay(
+    logs.filter((l) => l.workDate >= startStr && l.workDate < endStr),
+  );
 }
 
-/** Per-worker monthly totals for a Jalali year. */
 export async function getYearMatrix(jy: number): Promise<{
-  workers: Array<{ workerId: number; workerName: string; months: number[]; total: number }>;
+  workers: Array<{
+    workerId: number;
+    workerName: string;
+    months: number[];
+    total: number;
+  }>;
 }> {
   const startStr = jalaliToGregorianStr(jy, 1, 1);
   const endStr = jalaliToGregorianStr(jy + 1, 1, 1);
   const logs = await allLogsWithWorker();
   const inYear = logs.filter((l) => l.workDate >= startStr && l.workDate < endStr);
 
-  // Gregorian month index (0-11) of each log's workDate -> Jalali month via boundary comparison
   const boundaries: string[] = [];
-  for (let m = 1; m <= 12; m++) {
-    boundaries.push(jalaliToGregorianStr(jy, m, 1));
-  }
+  for (let m = 1; m <= 12; m++) boundaries.push(jalaliToGregorianStr(jy, m, 1));
   boundaries.push(endStr);
 
   const byWorker = new Map<number, { workerName: string; months: number[] }>();
@@ -140,7 +149,6 @@ export async function getYearMatrix(jy: number): Promise<{
   return { workers };
 }
 
-/** Worker-facing summary: today + last 7 days + current Jalali month + recent logs. */
 export async function getWorkerSummary(workerId: number): Promise<{
   today: DayRow | null;
   todayStr: string;
@@ -160,18 +168,21 @@ export async function getWorkerSummary(workerId: number): Promise<{
       entryTime: l.entryTime,
       exitTime: l.exitTime,
       worker: { firstName: '', lastName: '' },
-    }))
+    })),
   ).sort((a, b) => (a.date < b.date ? 1 : -1));
 
   const today = rows.find((r) => r.date === todayStr) ?? null;
 
-  const weekCutoff = new Date(`${todayStr}T00:00:00.000Z`).getTime() - 6 * 86400000;
-  const weekRows = rows.filter((r) => new Date(`${r.date}T00:00:00.000Z`).getTime() >= weekCutoff);
+  const weekCutoff =
+    new Date(`${todayStr}T00:00:00.000Z`).getTime() - 6 * 86_400_000;
+  const weekRows = rows.filter(
+    (r) => new Date(`${r.date}T00:00:00.000Z`).getTime() >= weekCutoff,
+  );
 
-  const { toJalaliParts } = await import('./jalali');
   const { jy, jm } = toJalaliParts(new Date());
   const mStart = jalaliToGregorianStr(jy, jm, 1);
-  const mEnd = jm === 12 ? jalaliToGregorianStr(jy + 1, 1, 1) : jalaliToGregorianStr(jy, jm + 1, 1);
+  const mEnd =
+    jm === 12 ? jalaliToGregorianStr(jy + 1, 1, 1) : jalaliToGregorianStr(jy, jm + 1, 1);
   const monthRows = rows.filter((r) => r.date >= mStart && r.date < mEnd);
 
   const sum = (rs: DayRow[]) => rs.reduce((s, r) => s + r.hours, 0);

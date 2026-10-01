@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { db } from '@/lib/prisma';
-import { auth } from '@/lib/auth';
+import { requireAdmin } from '@/lib/api-auth';
 
 export const runtime = 'nodejs';
 
@@ -15,9 +15,11 @@ const DEPARTMENTS = [
 ] as const;
 
 export async function GET() {
-  const session = await auth();
-  if (session?.user?.role !== 'ADMIN') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  let session;
+  try {
+    session = await requireAdmin();
+  } catch (response) {
+    return response as NextResponse;
   }
 
   const workers = await db.orm.public.Worker
@@ -28,9 +30,11 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await auth();
-  if (session?.user?.role !== 'ADMIN') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  let session;
+  try {
+    session = await requireAdmin();
+  } catch (response) {
+    return response as NextResponse;
   }
 
   const body = await req.json();

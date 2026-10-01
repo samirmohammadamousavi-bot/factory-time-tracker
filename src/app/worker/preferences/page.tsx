@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTheme } from '@/components/ThemeProvider';
 
 const THEMES = [
   { id: 'a', colors: ['#1c1714', '#8b7765', '#d8c8b4', '#f5efe6', '#b99a5b'], label: 'شنی کلاسیک' },
@@ -15,14 +16,21 @@ const THEMES = [
   { id: 'i', colors: ['#0e0e0e', '#2b2b2b', '#9a948b', '#fff8ea', '#d8c49a'], label: 'مشکی طلایی' },
   { id: 'j', colors: ['#2d1b2e', '#c48fa8', '#f5c6d6', '#fff5f7', '#e88fab'], label: 'رز دخترانه' },
   { id: 'k', colors: ['#1e293b', '#ec4899', '#06b6d4', '#ffffff', '#f59e0b'], label: 'رنگارنگ' },
-];
+] as const;
 
 export default function PreferencesPage() {
+  const { theme, setTheme, loading: themeLoading } = useTheme();
   const [selected, setSelected] = useState<string | null>(null);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    if (!themeLoading) {
+      setSelected(theme);
+    }
+  }, [theme, themeLoading]);
 
   const save = async (themeId: string) => {
     setSelected(themeId);
@@ -38,16 +46,29 @@ export default function PreferencesPage() {
       const data = await res.json();
       if (!res.ok) {
         setError(data.error || 'خطا در ذخیره');
+        setSelected(theme);
         return;
       }
+      setTheme(themeId as 'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h' | 'i' | 'j' | 'k');
       setMessage(data.message || 'ذخیره شد');
       router.refresh();
     } catch {
       setError('خطا در اتصال به سرور');
+      setSelected(theme);
     } finally {
       setSaving(false);
     }
   };
+
+  if (themeLoading) {
+    return (
+      <div dir="rtl" className="p-4 md:p-8 pb-12">
+        <div className="max-w-4xl mx-auto space-y-6">
+          <p className="text-center text-cream/40 py-12">در حال بارگذاری...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div dir="rtl" className="p-4 md:p-8 pb-12">

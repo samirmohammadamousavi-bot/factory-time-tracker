@@ -1,14 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
+import { requireAdmin } from '@/lib/api-auth';
 import { getDailyReport } from '@/lib/report';
 import { tehranDateString } from '@/lib/jalali';
 
 export const runtime = 'nodejs';
 
 export async function GET(req: NextRequest) {
-  const session = await auth();
-  if (session?.user?.role !== 'ADMIN') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  let session;
+  try {
+    session = await requireAdmin();
+  } catch (response) {
+    return response as NextResponse;
   }
 
   const { searchParams } = new URL(req.url);

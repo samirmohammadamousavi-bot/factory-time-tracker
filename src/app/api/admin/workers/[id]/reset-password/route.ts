@@ -1,20 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
+import bcrypt from 'bcryptjs';
 import { db } from '@/lib/prisma';
-import { auth } from '@/lib/auth';
+import { requireAdmin } from '@/lib/api-auth';
 
 export const runtime = 'nodejs';
 
-const DEPARTMENTS = ['PRODUCTION','PACKAGING','MAINTENANCE','QUALITY','WAREHOUSE','ADMIN'] as const;
-const ROLES = ['ADMIN', 'WORKER'] as const;
-const GENDERS = ['MALE', 'FEMALE'] as const;
-
-export async function PATCH(
-  req: NextRequest,
+export async function POST(
+  _req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const session = await auth();
-  if (session?.user?.role !== 'ADMIN') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  let session;
+  try {
+    session = await requireAdmin();
+  } catch (response) {
+    return response as NextResponse;
   }
 
   const { id } = await params;
@@ -28,39 +27,11 @@ export async function PATCH(
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
 
-  const body = await req.json();
-  const { nationalId, phone, firstName, lastName, role, gender, department, isActive } = body;
+  const passwordHash = await bcrypt.hash(existing.phone, 10);
+  await db.orm.public.Worker.where({ id: workerId }).update({ passwordHash });
 
-  const updates: Record<string, unknown> = {};
-  if (typeof nationalId === 'string' && nationalId.trim()) updates.nationalId = nationalId.trim();
-  if (typeof phone === 'string' && phone.trim()) updates.phone = phone.trim();
-  if (typeof firstName === 'string' && firstName.trim()) updates.firstName = firstName.trim();
-  if (typeof lastName === 'string' && lastName.trim()) updates.lastName = lastName.trim();
-  if (ROLES.includes(role)) updates.role = role;
-  if (GENDERS.includes(gender)) updates.gender = gender;
-  if (DEPARTMENTS.includes(department)) updates.department = department;
-
-  // Prevent admin locking themselves out
-  if (typeof isActive === 'boolean') {
-    if (workerId === Number(session.user.id) && isActive === false) {
-      return NextResponse.json({ error: 'نمی‌توانید حساب خودتان را غیرفعال کنید' }, { status: 400 });
-    }
-    updates.isActive = isActive;
-  }
-
-  if (Object.keys(updates).length === 0) {
-    return NextResponse.json({ error: 'No fields to update' }, { status: 400 });
-  }
-
-  try {
-    await db.orm.public.Worker.where({ id: workerId }).update(updates);
-    return NextResponse.json({ ok: true });
-  } catch (error) {
-    const code = (error as { code?: string }).code;
-    const message = error instanceof Error ? error.message : '';
-    if (code === 'ORM.CONSTRAINT_VIOLATION' || message.includes('unique')) {
-      return NextResponse.json({ error: 'کد ملی یا شماره تلفن تکراری است' }, { status: 400 });
-    }
-    throw error;
-  }
+  return NextResponse.json({
+    ok: true,
+    message: 'رمز عبور به شماره تلفن بازنشانی شد',
+  });
 }

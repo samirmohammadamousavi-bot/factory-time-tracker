@@ -1,13 +1,15 @@
 import { NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
+import { requireWorker } from '@/lib/api-auth';
 import { getWorkerSummary } from '@/lib/report';
 
 export const runtime = 'nodejs';
 
 export async function GET() {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  let session;
+  try {
+    session = await requireWorker();
+  } catch (response) {
+    return response as NextResponse;
   }
 
   return NextResponse.json(await getWorkerSummary(Number(session.user.id)));

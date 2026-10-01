@@ -1,23 +1,24 @@
+import '@/lib/temporal-setup';
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/prisma';
-import { auth } from '@/lib/auth';
-import { tehranDateString, dateOnlyUtc } from '@/lib/jalali';
+import { requireWorker } from '@/lib/api-auth';
+import { tehranDateString } from '@/lib/jalali';
 
 export const runtime = 'nodejs';
 
 export async function POST(req: NextRequest) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  let session;
+  try {
+    session = await requireWorker();
+  } catch (response) {
+    return response as NextResponse;
   }
 
   const workerId = Number(session.user.id);
-  const { action } = await req.json(); // "clock-in" | "clock-out"
-  const now = new Date();
-  const todayStr = tehranDateString(now);
-  const workDate = dateOnlyUtc(todayStr);
+  const { action } = await req.json();
+  const now = Temporal.Now.instant();
+  const workDateStr = tehranDateString(now);
 
-  const workDateStr = workDate.toISOString().slice(0, 10);
   const todaysLogs = await db.orm.public.TimeLog
     .where({ workerId, workDate: workDateStr })
     .all();
@@ -27,10 +28,9 @@ export async function POST(req: NextRequest) {
     if (openLog) {
       return NextResponse.json({ error: 'Already clocked in' }, { status: 400 });
     }
-
     await db.orm.public.TimeLog.create({
       workerId,
-      entryTime: now.toISOString(),
+      entryTime: now,
       workDate: workDateStr,
     });
     return NextResponse.json({ ok: true, message: 'ورود ثبت شد' });
@@ -40,10 +40,9 @@ export async function POST(req: NextRequest) {
     if (!openLog) {
       return NextResponse.json({ error: 'No open clock-in' }, { status: 400 });
     }
-
     await db.orm.public.TimeLog
       .where({ id: openLog.id })
-      .update({ exitTime: now.toISOString() });
+      .update({ exitTime: Temporal.Now.instant() });
     return NextResponse.json({ ok: true, message: 'خروج ثبت شد' });
   }
 

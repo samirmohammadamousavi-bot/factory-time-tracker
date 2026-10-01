@@ -1,15 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/prisma';
-import { auth } from '@/lib/auth';
+import { requireWorker } from '@/lib/api-auth';
 
 export const runtime = 'nodejs';
 
 const THEMES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k'] as const;
 
 export async function PATCH(req: NextRequest) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  let session;
+  try {
+    session = await requireWorker();
+  } catch (response) {
+    return response as NextResponse;
   }
 
   const { theme } = await req.json();

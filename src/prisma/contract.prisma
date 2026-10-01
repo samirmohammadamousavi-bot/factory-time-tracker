@@ -1,33 +1,97 @@
 // use prisma-8
 
-model Worker {
-  id           Int      @id @default(autoincrement())
-  nationalId   String   @unique
-  phone        String   @unique
-  passwordHash String
-  firstName    String
-  lastName     String
-  role         String   @default("WORKER")
-  isActive     Boolean  @default(true)
-  createdAt    TimestamptzString @default(now())
-  gender       String    @default("MALE")     // "MALE" | "FEMALE"
-  department   String    @default("PRODUCTION") // PRODUCTION | PACKAGING | MAINTENANCE | QUALITY | WAREHOUSE | ADMIN
-  theme        String    @default("a")        // "a".."i"
+// ---------------------------------------------------------------------------
+// Factory Time Tracker — data contract
+//
+// After editing:
+//   npx prisma contract emit
+//   npx prisma db update
+// ---------------------------------------------------------------------------
 
-  timeLogs     TimeLog[]
+model Worker {
+  id            Int      @id @default(autoincrement())
+  nationalId    String   @unique
+  phone         String   @unique
+  passwordHash  String
+  firstName     String
+  lastName      String
+  role          String
+  isActive      Boolean
+  gender        String
+  department    String
+  theme         String
+  createdAt     DateTime @default(now())
+
+  timeLogs         TimeLog[]
+  vacationBalances VacationBalance[]
+  vacationRequests VacationRequest[]
+  notifications    Notification[]
 }
 
 model TimeLog {
-  id        Int      @id @default(autoincrement())
+  id        Int        @id @default(autoincrement())
   workerId  Int
-  worker    Worker   @relation(fields: [workerId], references: [id], onDelete: Cascade)
-
-  entryTime TimestamptzString
-  exitTime  TimestamptzString?
+  worker    Worker     @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  entryTime DateTime
+  exitTime  DateTime?
   workDate  DateString
+  createdAt DateTime   @default(now())
 
-  createdAt TimestamptzString @default(now())
-
-  @@index([workerId, workDate])
   @@index([workDate])
+  @@index([workerId])
+  @@index([workerId, workDate])
+}
+
+// ---------------------------------------------------------------------------
+// Vacation tracking
+// ---------------------------------------------------------------------------
+
+model VacationBalance {
+  id                Int        @id @default(autoincrement())
+  workerId          Int
+  worker            Worker     @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  jalaliYear        Int
+  manualCarryIn     Int?
+  adjustment        Int
+  trackingStartDate DateTime   @default(now())
+  createdAt         DateTime   @default(now())
+  updatedAt         temporal.updatedAt()
+
+  @@unique([workerId, jalaliYear])
+  @@index([workerId])
+  @@index([jalaliYear])
+}
+
+model VacationRequest {
+  id         Int        @id @default(autoincrement())
+  workerId   Int
+  worker     Worker     @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  startDate  DateString
+  endDate    DateString
+  days       Int
+  reason     String?
+  status     String
+  adminNote  String?
+  reviewedAt DateTime?
+  createdAt  DateTime   @default(now())
+  updatedAt  temporal.updatedAt()
+
+  @@index([workerId])
+  @@index([status])
+  @@index([startDate, endDate])
+}
+
+model Notification {
+  id        Int       @id @default(autoincrement())
+  workerId  Int
+  worker    Worker    @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  type      String
+  title     String
+  body      String?
+  link      String?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([workerId, readAt])
+  @@index([workerId, createdAt])
 }

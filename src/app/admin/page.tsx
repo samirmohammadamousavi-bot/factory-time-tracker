@@ -165,7 +165,7 @@ function DayView() {
               onClick={goToday}
               className={`px-4 py-2 rounded-xl text-sm font-semibold cursor-pointer group-hover:animate-bounce-slow transition-all ${
                 isToday
-                  ? 'bg-[#5ca124] text-white shadow-md shadow-[#5ca124]/30'
+                  ? 'bg-olive text-white shadow-md shadow-olive/30'
                   : 'border border-[#d9c8b8] text-[#2d1a1f] hover:bg-[#e8dcd0]'
               }`}
             >
@@ -225,7 +225,7 @@ function DayView() {
       <div className="grid grid-cols-3 gap-3">
         <div className="luxury-card rounded-2xl p-5 text-center">
           <p className="text-xs font-semibold text-[#2d1a1f]/50 tracking-wide">حاضرین</p>
-          <p className="text-3xl font-bold text-[#5ca124] mt-1">{present}</p>
+          <p className="text-3xl font-bold text-olive mt-1">{present}</p>
         </div>
         <div className="luxury-card rounded-2xl p-5 text-center">
           <p className="text-xs font-semibold text-[#2d1a1f]/50 tracking-wide">غایبین</p>
@@ -267,7 +267,7 @@ function DayView() {
                     <td className="px-4 py-3 font-semibold text-[#29a9a0]">{fmt(r.hours)}</td>
                     <td className="px-4 py-3">
                       {r.status === 'complete'
-                        ? <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-[#5ca124]/15 text-[#5ca124]">تکمیل شده</span>
+                        ? <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-olive/15 text-olive">تکمیل شده</span>
                         : <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-[#29a9a0]/15 text-[#29a9a0]">در حال کار</span>}
                     </td>
                   </tr>

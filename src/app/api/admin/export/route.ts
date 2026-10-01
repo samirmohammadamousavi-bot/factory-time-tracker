@@ -1,8 +1,9 @@
+import '@/lib/temporal-setup';
 import { NextRequest, NextResponse } from 'next/server';
 import * as XLSX from 'xlsx';
-import { auth } from '@/lib/auth';
+import { requireAdmin } from '@/lib/api-auth';
 import { getDailyReport, getMonthRows, getYearMatrix } from '@/lib/report';
-import { tehranDateString, toJalali } from '@/lib/jalali';
+import { tehranDateString, toJalali, toJalaliParts } from '@/lib/jalali';
 
 export const runtime = 'nodejs';
 
@@ -21,9 +22,12 @@ function autosize(ws: XLSX.WorkSheet, widths: number[]) {
   ws['!cols'] = widths.map((wch) => ({ wch }));
 }
 
-function timeCell(iso: string | null): string {
-  if (!iso) return '—';
-  return toJalali(new Date(iso), { hour: '2-digit', minute: '2-digit' });
+function timeCell(instant: Temporal.Instant | null): string {
+  if (!instant) return '—';
+  return toJalali(new Date(instant.epochMilliseconds), {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 }
 
 function dateCell(dateStr: string): string {
@@ -46,9 +50,11 @@ function toDownload(wb: XLSX.WorkBook, filename: string): NextResponse {
 }
 
 export async function GET(req: NextRequest) {
-  const session = await auth();
-  if (session?.user?.role !== 'ADMIN') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  let session;
+  try {
+    session = await requireAdmin();
+  } catch (response) {
+    return response as NextResponse;
   }
 
   const { searchParams } = new URL(req.url);
@@ -115,7 +121,6 @@ export async function GET(req: NextRequest) {
   }
 
   if (type === 'yearly') {
-    const { toJalaliParts } = await import('@/lib/jalali');
     const jy = Number(searchParams.get('jy')) || toJalaliParts(new Date()).jy;
     const { workers } = await getYearMatrix(jy);
     const wb = rtlWorkbook();
