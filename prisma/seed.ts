@@ -1,9 +1,6 @@
 import 'dotenv/config';
-import postgres from '@prisma/orm-postgres/runtime';
-import contractJson from '../src/prisma/contract.json' with { type: 'json' };
 import bcrypt from 'bcryptjs';
-
-const db = postgres({ contractJson, url: process.env['DATABASE_URL']! });
+import { db } from '../src/lib/prisma';
 
 async function main() {
   const adminNationalId = '2981045776';
